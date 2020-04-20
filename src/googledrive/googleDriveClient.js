@@ -1,6 +1,6 @@
 //GOOGLE DRIVE API DOCS: https://developers.google.com/drive/api/v3/
 const {google} = require('googleapis');
-const credentials = require('../../credentials.json'); //get generated credentials key
+const credentials = require('../../creds/credentials.json'); //get generated credentials key
 const DOH_DATA_ROOT_ID = '10VkiUA8x7TS2jkibhSZK1gmWxFM-EoZP' //Folder ID of DOH Data
 const scopes = ['https://www.googleapis.com/auth/drive']; //set scope to accessing drive api
 const auth = new google.auth.JWT( //create new authorization object using JWT (JSON Web Token)
