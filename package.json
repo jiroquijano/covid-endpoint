@@ -2,13 +2,14 @@
   "name": "covidendpoint",
   "version": "1.0.0",
   "description": "node endpoint project using google drive api, express and mongodb",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js"
   },
   "author": "jiro quijano",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "googleapis": "^39.2.0"
   }
 }
