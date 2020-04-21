@@ -12,29 +12,58 @@ const auth = new google.auth.JWT( //create new authorization object using JWT (J
 
 const drive = google.drive({version: "v3", auth}); //get drive client using auth object
 
-const getFoldersList = (callback)=>{
-    drive.files.list({
-        fields: 'files(id,name)',
-        q: `'${DOH_DATA_ROOT_ID}' in parents and name contains 'DOH COVID Data Drop_'` //DOCS/search-files
-    },(err,res)=>{
-        if(err) callback({error:'Operation failed!'},undefined);
-        callback(undefined,res.data);
-    });
+const getFoldersList = async(callback) =>{
+    try{
+        const response = await drive.files.list({
+            fields: 'files(id,name)',
+            q: `'${DOH_DATA_ROOT_ID}' in parents and name contains 'DOH COVID Data Drop_'` //DOCS/search-files
+            });
+        callback(undefined,response.data.files);
+    } catch(err) {
+        callback(err,undefined);
+    }
 };
 
-const getFolderID = (date, callback) =>{
-    drive.files.list({
-        fields: 'files(id,name)',
-        q: `'${DOH_DATA_ROOT_ID}' in parents and name contains '${date}'`
-    },(err,res)=>{
-        if(err) callback({error: "Operation failed!"}, undefined);
-        const files = res.data.files;
-        if(files.length){
-            callback(undefined, files);
-        }else{
-            callback({error:"No files found"}, undefined);
+const getFolderWithDate = async (date, callback) =>{
+    try{
+        const response = await drive.files.list({
+            fields: 'files(id,name)',
+            q: `'${DOH_DATA_ROOT_ID}' in parents and name contains '${date}'`
+        });
+        if(response.data.files.length === 0) return callback({error:`DOH Data drop for ${date} (still) unavailable`},undefined);
+        callback(undefined,response.data.files);
+
+    }catch(err){
+        callback(err,undefined);
+    }
+};
+
+const getFileInfo = async(folderID, fileType, callback) =>{
+    try{
+        const response = await drive.files.list({
+            fields: 'files(webContentLink,name,id)',
+            q: `'${folderID}' in parents and name contains '${fileType}' and mimeType = "text/csv"`
+        });
+        callback(undefined,response.data.files);
+    }catch(error){
+        callback(error,undefined);
+    }
+};
+
+const getDownloadLink = (date,fileType,callback)=>{
+    getFolderWithDate(date,(error,folderData)=>{
+        if(error) return callback(error,undefined);
+
+        if(folderData.length > 0){
+            const folderID = folderData[0].id;
+
+            getFileInfo(folderID,fileType,(err,fileData)=>{
+                if(err) return callback(err,undefined);
+                callback(undefined,fileData);
+            });
+
         }
     });
 };
 
-module.exports = {getFolderID, getFoldersList};
+module.exports = {getFolderWithDate, getFoldersList, getDownloadLink};
